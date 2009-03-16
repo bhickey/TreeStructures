@@ -1,3 +1,8 @@
+--
+-- Copyright (c) 2009 Brendan Hickey - http://bhickey.net
+-- Simplified BSD License (see http://www.opensource.org/licenses/bsd-license.php)
+--
+
 module Data.Heap.Skew where
 
 import Data.List as L

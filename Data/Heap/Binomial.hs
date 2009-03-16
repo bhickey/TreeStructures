@@ -1,3 +1,8 @@
+--
+-- Copyright (c) 2009 Brendan Hickey - http://bhickey.net
+-- Simplified BSD License (see http://www.opensource.org/licenses/bsd-license.php)
+--
+
 module Data.Heap.Binomial 
 (head, tail, merge, singleton, empty, null, fromList, toList, insert) where
 
