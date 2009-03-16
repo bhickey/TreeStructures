@@ -7,7 +7,7 @@ module Data.Heap.Binomial
 (head, tail, merge, singleton, empty, null, fromList, toList, insert) where
 
 import Prelude hiding (head, tail, null)
-import Data.List (delete, deleteBy, insertBy, find)
+import Data.List (delete)
 
 data (Ord a, Ord b, Eq a, Eq b) => HeapNode a b = HeapNode a Int [b]
 
@@ -26,10 +26,7 @@ rank (HeapNode _ n _) = n
 
 hRank :: (Ord a, Ord b, Eq a, Eq b) => [HeapNode a b] -> Int
 hRank [] = 0
-hRank (hd:tl) = rank hd
-
-rankNodes :: (Ord a, Ord b, Eq a, Eq b) => HeapNode a b -> HeapNode a b -> Ordering
-rankNodes x y = compare (rank x) (rank y)
+hRank (hd:_) = rank hd
 
 extract :: (Ord a, Ord b, Eq a, Eq b) => HeapNode a b -> a
 extract (HeapNode n _ _) = n
@@ -71,7 +68,7 @@ mergeNodes f@(h1:t1) s@(h2:t2) =
       else h2:(mergeNodes t2 f)
 
 combine :: (Ord a, Eq a) => HeapNode a (BinomialHeap a) -> HeapNode a (BinomialHeap a) -> HeapNode a (BinomialHeap a)
-combine h1@(HeapNode e1 n1 l1) h2@(HeapNode e2 n2 l2) =
+combine h1@(HeapNode e1 n1 l1) h2 =
   if h1 <= h2
   then HeapNode e1 (n1 + 1) (l1 ++ [Heap [h2]])
   else combine h2 h1
@@ -91,9 +88,9 @@ fromList [] = EmptyHeap
 fromList l =  (\ ((hd:_):_) -> hd) $ dropWhile (\ x -> length x > 1) $ iterate (pairWise merge) $! map singleton l
 
 pairWise :: (a -> a -> a) -> [a] -> [a] 
-pairWise f [] = []
+pairWise _ [] = []
 pairWise f (a:b:tl) = (f a b):(pairWise f tl)
-pairWise f a = a
+pairWise _ a = a
 
 toList :: (Ord a) => BinomialHeap a -> [a]
 toList EmptyHeap  = []

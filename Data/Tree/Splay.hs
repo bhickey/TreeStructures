@@ -27,33 +27,11 @@ lookup n@(SplayTree k v l r) sk =
               Leaf -> n
               (SplayTree k1 v1 l1 r1) -> lookup (SplayTree k1 v1 (SplayTree k v l l1) r1) sk
 
--- find promotes a node by one level upon finding it.
-find :: (Ord k) => SplayTree k v -> k -> (Maybe v, SplayTree k v)
-find Leaf _ = (Nothing, Leaf)
-find n@(SplayTree k v l r) sk =
-  if sk == k
-  then (Just v, n)
-  else if k > sk
-       then case l of
-              Leaf -> (Nothing, n)
-              (SplayTree k1 v1 l1 r1) ->
-                if sk == k1
-                then (Just v1, (SplayTree k1 v1 l1 (SplayTree k v r1 r)))
-                else let (res, sub) = find l sk
-                     in (res, (SplayTree k v sub r))
-       else case r of
-              Leaf -> (Nothing, n)
-              (SplayTree k1 v1 l1 r1) ->
-                if sk == k1
-                then (Just v1, (SplayTree k1 v1 (SplayTree k v l l1) r1))
-                else let (res, _) = find l sk
-                     in (res, (SplayTree k v l r))
-
 insert :: (Ord k) => SplayTree k v -> (k,v) -> SplayTree k v
 insert t (k,v) =
   case lookup t k of
     Leaf -> (SplayTree k v Leaf Leaf)
-    t1@(SplayTree k1 v1 l r) ->
+    (SplayTree k1 v1 l r) ->
         if k1 < k
         then (SplayTree k v (SplayTree k1 v1 l Leaf) r)
         else (SplayTree k v l (SplayTree k1 v1 Leaf r))
@@ -72,12 +50,14 @@ tail (SplayTree _ _ l r)    =
     _ -> error "splay tree corruption"
 
 splayRight :: (Ord k) => SplayTree k v -> SplayTree k v
-splayRight h@(SplayTree k v _ Leaf) = h
-splayRight h@(SplayTree k1 v1 l1 (SplayTree k2 v2 l2 r2))  = splayRight $ (SplayTree k2 v2 (SplayTree k1 v1 l1 l2) r2)
+splayRight Leaf = Leaf
+splayRight h@(SplayTree _ _ _ Leaf) = h
+splayRight (SplayTree k1 v1 l1 (SplayTree k2 v2 l2 r2))  = splayRight $ (SplayTree k2 v2 (SplayTree k1 v1 l1 l2) r2)
 
 splayLeft :: (Ord k) => SplayTree k v -> SplayTree k v
-splayLeft h@(SplayTree k v Leaf _) = h
-splayLeft h@(SplayTree k1 v1 (SplayTree k2 v2 l2 r2) r1)  = splayLeft $ (SplayTree k2 v2 l2 (SplayTree k1 v1 r2 r1))
+splayLeft Leaf = Leaf
+splayLeft h@(SplayTree _ _ Leaf _) = h
+splayLeft (SplayTree k1 v1 (SplayTree k2 v2 l2 r2) r1)  = splayLeft $ (SplayTree k2 v2 l2 (SplayTree k1 v1 r2 r1))
 
 fromList :: (Ord k) => [(k,v)] -> SplayTree k v
 fromList [] = Leaf

@@ -31,7 +31,7 @@ cutRight (SkewHeap a l r) = (SkewHeap a l SkewLeaf):(cutRight r)
 
 -- assumes h1 >= h2, merge relies on this
 assemble :: (Ord a) => SkewHeap a -> SkewHeap a -> SkewHeap a
-assemble h1 h2@(SkewHeap a l SkewLeaf) = SkewHeap a h1 l
+assemble h1 (SkewHeap a l SkewLeaf) = SkewHeap a h1 l
 assemble _ _ = error "invalid heap assembly"
 
 head :: (Ord a) => SkewHeap a -> a
@@ -51,6 +51,6 @@ fromList [] = SkewLeaf
 fromList l =  (\ ((hd:_):_) -> hd) $! dropWhile (\ x -> length x > 1) $ iterate (pairWise merge) $ map singleton l
 
 pairWise :: (a -> a -> a) -> [a] -> [a] 
-pairWise f [] = []
+pairWise _ [] = []
 pairWise f (a:b:tl) = (f a b):(pairWise f tl)
-pairWise f a = a
+pairWise _ a = a
