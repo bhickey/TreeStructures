@@ -3,9 +3,12 @@
 -- Simplified BSD License (see http://www.opensource.org/licenses/bsd-license.php)
 --
 
-module Data.Heap.Skew where
+module Data.Heap.Skew 
+(SkewHeap, head, tail, merge, singleton, empty, null, fromList, toList, insert) 
+where
 
-import Data.List as L
+import Prelude hiding (head, tail, null)
+import qualified Data.List as L
 
 data (Ord a) => SkewHeap a =
     SkewLeaf
@@ -13,6 +16,10 @@ data (Ord a) => SkewHeap a =
 
 empty :: (Ord a) => SkewHeap a
 empty = SkewLeaf
+
+null :: (Ord a) => SkewHeap a -> Bool
+null SkewLeaf = True
+null _ = False
 
 singleton :: (Ord a) => a -> SkewHeap a
 singleton n = SkewHeap n SkewLeaf SkewLeaf

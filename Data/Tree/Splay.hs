@@ -3,16 +3,25 @@
 -- Simplified BSD License (see http://www.opensource.org/licenses/bsd-license.php)
 --
 
-module Data.Tree.Splay where
+module Data.Tree.Splay 
+(SplayTree, head, tail, singleton, empty, null, fromList, toList, insert, lookup) 
+where
 
-import Prelude hiding (head, tail, lookup)
+import Prelude hiding (head, tail, lookup, null)
 
 data (Ord k) => SplayTree k v = 
     Leaf
-  | SplayTree k v (SplayTree k v) (SplayTree k v)
+  | SplayTree k v (SplayTree k v) (SplayTree k v) deriving (Ord, Eq)
 
 singleton :: (Ord k) => (k,v) -> SplayTree k v
 singleton (k,v) = SplayTree k v Leaf Leaf
+
+empty :: (Ord k) => SplayTree k v
+empty = Leaf
+
+null :: (Ord k) => SplayTree k v -> Bool
+null Leaf = True
+null _ = False
 
 lookup :: (Ord k) => SplayTree k v -> k -> SplayTree k v
 lookup Leaf _ = Leaf

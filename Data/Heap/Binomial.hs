@@ -4,7 +4,8 @@
 --
 
 module Data.Heap.Binomial 
-(head, tail, merge, singleton, empty, null, fromList, toList, insert) where
+(BinomialHeap, head, tail, merge, singleton, empty, null, fromList, toList, insert) 
+where
 
 import Prelude hiding (head, tail, null)
 import Data.List (delete)

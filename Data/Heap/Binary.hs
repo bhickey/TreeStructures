@@ -3,9 +3,11 @@
 -- Simplified BSD License (see http://www.opensource.org/licenses/bsd-license.php)
 --
 
-module Data.Heap.Binary where
+module Data.Heap.Binary 
+(BinaryHeap, head, tail, merge, singleton, empty, null, fromList, toList, insert) 
+where
 
-import Prelude hiding (head, tail)
+import Prelude hiding (head, tail, null)
 
 data (Ord n) => BinaryHeap n =
     Leaf
@@ -35,12 +37,13 @@ merge h1@(Node n1 d1 h1l h1r) h2@(Node _ d2 _ _) =
        else (Node n1 (d1 + d2) h1l (merge h1r h2))
   else merge h2 h1
 
--- null is not used within this code, I included it because it's a nice thing to have
+insert :: (Ord a) => BinaryHeap a -> a -> BinaryHeap a
+insert h a = merge h (singleton a)
+
 null :: (Ord a) => BinaryHeap a -> Bool
 null Leaf = True
 null _    = False
 
--- this function is voodoo! It should NOT be used on infinite lists.
 toList :: (Ord a) => BinaryHeap a -> [a]
 toList Leaf = []
 toList h@(Node _ _ _ _) = (head h):(toList $ tail h)
@@ -61,9 +64,3 @@ head (Node n _ _ _) = n
 tail :: (Ord a) => BinaryHeap a -> BinaryHeap a
 tail Leaf = error "Data.Heap empty list"
 tail (Node _ _ h1 h2) = merge h1 h2
-
--- everyone loves heapsort.
-heapSort :: (Ord a) => [a] -> [a]
-heapSort [] = []
-heapSort a = toList $! fromList a
-
