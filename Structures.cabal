@@ -1,9 +1,19 @@
-Name:           Structures
-Version:        0.1
-Description:    Assorted data structures
-License:        Simplified BSD License
-License-file:   LICENSE
-Author:         Brendan Hickey
-Maintainer:     brendan@bhickey.net
-Build-Type:     Simple
-Cabal-Version:  >=1.2
+Name:               Structures
+Version:            0.0.1
+Synopsis:        Functional data structures
+License:            BSD3
+License-file:       LICENSE
+Author:             Brendan Hickey
+Maintainer:         brendan@bhickey.net
+Homepage:           http://hg.bhickey.net
+Stability:          experimental
+Build-Type:         Simple
+Cabal-Version:      >=1.2
+
+Library
+  Build-Depends:    base
+  Exposed-modules:  Data.Heap.Binary 
+                    Data.Heap.Binomial 
+                    Data.Heap.Skew
+                    Data.Tree.Splay
+  ghc-options:      -Wall
