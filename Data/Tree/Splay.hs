@@ -22,6 +22,28 @@ lookup n@(SplayTree k v l r) sk =
               Leaf -> n
               (SplayTree k1 v1 l1 r1) -> lookup (SplayTree k1 v1 (SplayTree k v l l1) r1) sk
 
+-- find promotes a node by one level upon finding it.
+find :: (Ord k) => SplayTree k v -> k -> (Maybe v, SplayTree k v)
+find Leaf _ = (Nothing, Leaf)
+find n@(SplayTree k v l r) sk =
+  if sk == k
+  then (Just v, n)
+  else if k > sk
+       then case l of
+              Leaf -> (Nothing, n)
+              (SplayTree k1 v1 l1 r1) ->
+                if sk == k1
+                then (Just v1, (SplayTree k1 v1 l1 (SplayTree k v r1 r)))
+                else let (res, sub) = find l sk
+                     in (res, (SplayTree k v sub r))
+       else case r of
+              Leaf -> (Nothing, n)
+              (SplayTree k1 v1 l1 r1) ->
+                if sk == k1
+                then (Just v1, (SplayTree k1 v1 (SplayTree k v l l1) r1))
+                else let (res, _) = find l sk
+                     in (res, (SplayTree k v l r))
+
 insert :: (Ord k) => SplayTree k v -> (k,v) -> SplayTree k v
 insert t (k,v) =
   case lookup t k of
