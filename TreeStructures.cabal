@@ -1,7 +1,7 @@
 Name:               TreeStructures
 Version:            0.0.1
-Synopsis:           Tree structures
-Description:        A collection of heaps and search trees
+Synopsis:           A collection of heaps and search trees
+Description:        This package presently includes binary heaps, binomial heaps, skew heaps and splay trees.
 License:            BSD3
 License-file:       LICENSE
 Author:             Brendan Hickey
