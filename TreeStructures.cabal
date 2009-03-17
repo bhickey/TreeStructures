@@ -1,0 +1,21 @@
+Name:               TreeStructures
+Version:            0.0.1
+Synopsis:           Tree structures
+Description:        A collection of heaps and search trees
+License:            BSD3
+License-file:       LICENSE
+Author:             Brendan Hickey
+Maintainer:         brendan@bhickey.net
+Homepage:           http://hg.bhickey.net
+Stability:          experimental
+Category:           DataStructures
+Build-Type:         Simple
+Cabal-Version:      >=1.2
+
+Library
+  Build-Depends:    base
+  Exposed-modules:  Data.Heap.Binary 
+                    Data.Heap.Binomial 
+                    Data.Heap.Skew
+                    Data.Tree.Splay
+  ghc-options:      -Wall

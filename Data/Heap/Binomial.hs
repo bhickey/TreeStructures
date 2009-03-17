@@ -39,12 +39,15 @@ null :: (Ord a) => BinomialHeap a -> Bool
 null EmptyHeap = True
 null _         = False
 
+-- | /O(1)/.
 singleton :: (Ord a) => a -> BinomialHeap a
 singleton n = Heap [HeapNode n 1 []]
 
+-- | /O(lg n)/
 insert :: (Ord a) => BinomialHeap a -> a -> BinomialHeap a
 insert h n = merge (singleton n) h
 
+-- | /O(lg n)/.
 merge :: (Ord a) => BinomialHeap a -> BinomialHeap a -> BinomialHeap a
 merge EmptyHeap n = n
 merge n EmptyHeap = n
@@ -74,16 +77,19 @@ combine h1@(HeapNode e1 n1 l1) h2 =
   then HeapNode e1 (n1 + 1) (l1 ++ [Heap [h2]])
   else combine h2 h1
 
+-- | /O(lg n)/
 head :: (Ord a) => BinomialHeap a -> a
 head EmptyHeap = error "Data.Heap: empty list"
 head (Heap hn) = extract $! minimum hn
 
+-- | /O(lg n)/
 tail :: (Ord a) => BinomialHeap a -> BinomialHeap a
 tail EmptyHeap = error "Data.Heap: empty list"
 tail (Heap hn) = 
   let n@(HeapNode _ _ hd) = (minimum hn) in
     foldl merge (Heap (delete n hn)) hd
 
+-- | /O(n)/
 fromList :: (Ord a, Eq a) => [a] -> BinomialHeap a
 fromList [] = EmptyHeap
 fromList l =  (\ ((hd:_):_) -> hd) $ dropWhile (\ x -> length x > 1) $ iterate (pairWise merge) $! map singleton l
@@ -93,6 +99,7 @@ pairWise _ [] = []
 pairWise f (a:b:tl) = (f a b):(pairWise f tl)
 pairWise _ a = a
 
+-- | /O(n lg n)/
 toList :: (Ord a) => BinomialHeap a -> [a]
 toList EmptyHeap  = []
 toList (Heap [])  = []
