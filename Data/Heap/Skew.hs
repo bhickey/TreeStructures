@@ -30,7 +30,15 @@ insert h a = merge h (singleton a)
 merge :: (Ord a) => SkewHeap a -> SkewHeap a -> SkewHeap a
 merge SkewLeaf n = n
 merge n SkewLeaf = n
-merge h1 h2 = foldl1 assemble $ L.sortBy (\ x y -> compare y x) $ (cutRight h1) ++ (cutRight h2)
+merge h1 h2 = foldl1 assemble $ reverse $ listMerge head (cutRight h1) (cutRight h2)
+
+listMerge :: (Ord b) => (a -> b) -> [a] -> [a] -> [a]
+listMerge _ [] s = s
+listMerge _ f [] = f
+listMerge c f@(h1:t1) s@(h2:t2) =
+  if (c h1) <= (c h2)
+  then h1:(listMerge c t1 s)
+  else h2:(listMerge c f t2)
 
 cutRight :: (Ord a) => SkewHeap a -> [SkewHeap a]
 cutRight SkewLeaf = []
