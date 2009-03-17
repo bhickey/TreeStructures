@@ -4,7 +4,7 @@
 --
 
 module Data.Tree.Splay 
-(SplayTree, head, tail, singleton, empty, null, fromList, toList, insert, lookup) 
+(SplayTree, head, tail, singleton, empty, null, fromList, fromAscList, toList, toAscList, insert, lookup) 
 where
 
 import Prelude hiding (head, tail, lookup, null)
@@ -29,12 +29,12 @@ lookup n@(SplayTree k v l r) sk =
   if sk == k
   then n
   else if k > sk
-       then case l of
+       then case lookup l sk of
               Leaf -> n
-              (SplayTree k1 v1 l1 r1) -> lookup (SplayTree k1 v1 l1 (SplayTree k v r1 r)) sk
-       else case r of
+              (SplayTree k1 v1 l1 r1) -> (SplayTree k1 v1 l1 (SplayTree k v r1 r))
+       else case lookup r sk of
               Leaf -> n
-              (SplayTree k1 v1 l1 r1) -> lookup (SplayTree k1 v1 (SplayTree k v l l1) r1) sk
+              (SplayTree k1 v1 l1 r1) -> (SplayTree k1 v1 (SplayTree k v l l1) r1)
 
 insert :: (Ord k) => SplayTree k v -> (k,v) -> SplayTree k v
 insert t (k,v) =
@@ -72,8 +72,13 @@ fromList :: (Ord k) => [(k,v)] -> SplayTree k v
 fromList [] = Leaf
 fromList l = foldl (\ acc x -> insert acc x) Leaf l
 
-toList :: (Ord k) => SplayTree k v -> [(k,v)]
-toList h@(SplayTree _ _ Leaf _) = (head h):(toList $ tail h)
-toList Leaf = []
-toList h = toList $ splayLeft h
+fromAscList :: (Ord k) => [(k,v)] -> SplayTree k v
+fromAscList = fromList
 
+toList :: (Ord k) => SplayTree k v -> [(k,v)]
+toList = toAscList
+
+toAscList :: (Ord k) => SplayTree k v -> [(k,v)]
+toAscList h@(SplayTree _ _ Leaf _) = (head h):(toAscList $ tail h)
+toAscList Leaf = []
+toAscList h = toAscList $ splayLeft h
