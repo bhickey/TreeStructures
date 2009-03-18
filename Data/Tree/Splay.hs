@@ -33,16 +33,16 @@ rank (SplayTree _ _ d _ _) = d
 -- | /Amortized O(lg n)/. Given a splay tree and a key, 'lookup' attempts to find a node with the specified key and splays this node to the root. If the key is not found, the nearest node is brought to the root of the tree.
 lookup :: (Ord k) => SplayTree k v -> k -> SplayTree k v
 lookup Leaf _ = Leaf
-lookup n@(SplayTree k v d l r) sk =
+lookup t@(SplayTree k v d l r) sk =
   if sk == k
-  then n
+  then t
   else if k > sk
        then case lookup l sk of
-              Leaf -> n
-              (SplayTree k1 v1 d1 l1 r1) -> (SplayTree k1 v1 d l1 (SplayTree k v (d - (rank l1) - 1) r1 r))
+              Leaf -> t
+              lt -> zig lt t
        else case lookup r sk of
-              Leaf -> n
-              (SplayTree k1 v1 d1 l1 r1) -> (SplayTree k1 v1 d (SplayTree k v (d - (rank r1) - 1) l l1) r1)
+              Leaf -> t
+              rt -> zag t rt
 
 -- | Locates the i^{th} element in BST order without splaying it.
 (!!) :: (Ord k) => SplayTree k v -> Int -> (k,v)
@@ -58,6 +58,38 @@ lookup n@(SplayTree k v d l r) sk =
            then l !! n
            else r !! (n - l')
 
+-- | Splays the i^{th} element in BST order
+splay :: (Ord k) => SplayTree k v -> Int -> SplayTree k v
+splay Leaf _ = error "index out of bounds"
+splay t@(SplayTree k v d l r) n =
+  if n > d
+  then error "index out of bounds"
+  else 
+    let l' = rank l in
+      if n == l'
+      then t
+      else if n <= l'
+           then case splay l n of
+                  Leaf -> error "index out of bounds"
+                  lt -> zig lt t
+           else case splay r (n - l') of
+                  Leaf -> error "index out of bounds"
+                  rt -> zag t rt
+
+-- | /O(1)/. zig rotates its first argument up
+zig :: (Ord k) => SplayTree k v -> SplayTree k v -> SplayTree k v
+zig Leaf _ = error "tree corruption"
+zig _ Leaf = error "tree corruption"
+zig (SplayTree k1 v1 d1 l1 r1) (SplayTree k v d l r) =
+  (SplayTree k1 v1 d l1 (SplayTree k v (d - (rank l1) - 1) r1 r))
+
+-- | /O(1)/. zig rotates its second argument up
+zag :: (Ord k) => SplayTree k v -> SplayTree k v -> SplayTree k v
+zag Leaf _ = error "tree corruption"
+zag _ Leaf = error "tree corruption"
+zag (SplayTree k v d l r) (SplayTree k1 v1 d1 l1 r1) =
+  (SplayTree k1 v1 d (SplayTree k v (d - (rank r1) - 1) l l1) r1)
+
 -- | /Amortized O(lg n)/. Given a splay tree and a key-value pair, 'insert' places the the pair into the tree in BST order.
 insert :: (Ord k) => SplayTree k v -> (k,v) -> SplayTree k v
 insert t (k,v) =
@@ -67,7 +99,6 @@ insert t (k,v) =
         if k1 < k
         then (SplayTree k v (d + 1) (SplayTree k1 v1 (d - rank r + 1) l Leaf) r)
         else (SplayTree k v (d + 1) l (SplayTree k1 v1 (d - rank l + 1) Leaf r))
-
 
 -- | /O(1)/. 'head' returns the key-value pair of the root.
 head :: (Ord k) => SplayTree k v -> (k,v)
