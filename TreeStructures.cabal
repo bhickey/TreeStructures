@@ -7,8 +7,8 @@ License-file:       LICENSE
 Author:             Brendan Hickey
 Maintainer:         brendan@bhickey.net
 Homepage:           http://hg.bhickey.net
-Stability:          experimental
-Category:           DataStructures
+Stability:          Experimental
+Category:           Data Structures
 Build-Type:         Simple
 Cabal-Version:      >=1.2
 

@@ -4,18 +4,18 @@
 --
 
 module Data.Tree.Splay 
-(SplayTree, head, tail, singleton, empty, null, fromList, fromAscList, toList, toAscList, insert, lookup) 
+(SplayTree, head, tail, singleton, empty, null, fromList, fromAscList, toList, toAscList, insert, lookup, (!!)) 
 where
 
-import Prelude hiding (head, tail, lookup, null)
+import Prelude hiding (head, tail, lookup, null, (!!))
 
 data (Ord k) => SplayTree k v = 
     Leaf
-  | SplayTree k v (SplayTree k v) (SplayTree k v) deriving (Ord, Eq)
+  | SplayTree k v Int (SplayTree k v) (SplayTree k v) deriving (Ord, Eq)
 
 -- | /O(1)/. 'singleton' constructs a splay tree containing one element.
 singleton :: (Ord k) => (k,v) -> SplayTree k v
-singleton (k,v) = SplayTree k v Leaf Leaf
+singleton (k,v) = SplayTree k v 0 Leaf Leaf
 
 -- | /O(1)/. 'empty' constructs an empty splay tree.
 empty :: (Ord k) => SplayTree k v
@@ -26,56 +26,75 @@ null :: (Ord k) => SplayTree k v -> Bool
 null Leaf = True
 null _ = False
 
+rank :: (Ord k) => SplayTree k v -> Int
+rank Leaf = 0
+rank (SplayTree _ _ d _ _) = d
 
 -- | /Amortized O(lg n)/. Given a splay tree and a key, 'lookup' attempts to find a node with the specified key and splays this node to the root. If the key is not found, the nearest node is brought to the root of the tree.
 lookup :: (Ord k) => SplayTree k v -> k -> SplayTree k v
 lookup Leaf _ = Leaf
-lookup n@(SplayTree k v l r) sk =
+lookup n@(SplayTree k v d l r) sk =
   if sk == k
   then n
   else if k > sk
        then case lookup l sk of
               Leaf -> n
-              (SplayTree k1 v1 l1 r1) -> (SplayTree k1 v1 l1 (SplayTree k v r1 r))
+              (SplayTree k1 v1 d1 l1 r1) -> (SplayTree k1 v1 d l1 (SplayTree k v (d - (rank l1) - 1) r1 r))
        else case lookup r sk of
               Leaf -> n
-              (SplayTree k1 v1 l1 r1) -> (SplayTree k1 v1 (SplayTree k v l l1) r1)
+              (SplayTree k1 v1 d1 l1 r1) -> (SplayTree k1 v1 d (SplayTree k v (d - (rank r1) - 1) l l1) r1)
+
+-- | Locates the i^{th} element in BST order without splaying it.
+(!!) :: (Ord k) => SplayTree k v -> Int -> (k,v)
+(!!) Leaf _ = error "index out of bounds"
+(!!) (SplayTree k v d l r) n =
+  if n > d
+  then error "index out of bounds"
+  else 
+    let l' = rank l in
+      if n == l'
+      then (k,v)
+      else if n <= l'
+           then l !! n
+           else r !! (n - l')
 
 -- | /Amortized O(lg n)/. Given a splay tree and a key-value pair, 'insert' places the the pair into the tree in BST order.
 insert :: (Ord k) => SplayTree k v -> (k,v) -> SplayTree k v
 insert t (k,v) =
   case lookup t k of
-    Leaf -> (SplayTree k v Leaf Leaf)
-    (SplayTree k1 v1 l r) ->
+    Leaf -> (SplayTree k v 0 Leaf Leaf)
+    (SplayTree k1 v1 d l r) ->
         if k1 < k
-        then (SplayTree k v (SplayTree k1 v1 l Leaf) r)
-        else (SplayTree k v l (SplayTree k1 v1 Leaf r))
+        then (SplayTree k v (d + 1) (SplayTree k1 v1 (d - rank r + 1) l Leaf) r)
+        else (SplayTree k v (d + 1) l (SplayTree k1 v1 (d - rank l + 1) Leaf r))
 
 
 -- | /O(1)/. 'head' returns the key-value pair of the root.
 head :: (Ord k) => SplayTree k v -> (k,v)
 head Leaf = error "head of empty tree"
-head (SplayTree k v _ _) = (k,v)
+head (SplayTree k v _ _ _) = (k,v)
 
 -- | /Amortized O(lg n)/. 'tail' removes the root of the tree and merges its subtrees
 tail :: (Ord k) => SplayTree k v -> SplayTree k v
 tail Leaf = error "tail of empty tree"
-tail (SplayTree _ _ Leaf r) = r
-tail (SplayTree _ _ l Leaf) = l
-tail (SplayTree _ _ l r)    = 
+tail (SplayTree _ _ _ Leaf r) = r
+tail (SplayTree _ _ _ l Leaf) = l
+tail (SplayTree _ _ _ l r)    = 
   case splayRight l of
-    (SplayTree k v l1 Leaf) -> (SplayTree k v l1 r)
+    (SplayTree k v d l1 Leaf) -> (SplayTree k v (d + rank r) l1 r)
     _ -> error "splay tree corruption"
 
 splayRight :: (Ord k) => SplayTree k v -> SplayTree k v
 splayRight Leaf = Leaf
-splayRight h@(SplayTree _ _ _ Leaf) = h
-splayRight (SplayTree k1 v1 l1 (SplayTree k2 v2 l2 r2))  = splayRight $ (SplayTree k2 v2 (SplayTree k1 v1 l1 l2) r2)
+splayRight h@(SplayTree _ _ _ _ Leaf) = h
+splayRight (SplayTree k1 v1 d1 l1 (SplayTree k2 v2 _ l2 r2)) = 
+  splayRight $ (SplayTree k2 v2 d1 (SplayTree k1 v1 (d1 - (rank r2)) l1 l2) r2)
 
 splayLeft :: (Ord k) => SplayTree k v -> SplayTree k v
 splayLeft Leaf = Leaf
-splayLeft h@(SplayTree _ _ Leaf _) = h
-splayLeft (SplayTree k1 v1 (SplayTree k2 v2 l2 r2) r1)  = splayLeft $ (SplayTree k2 v2 l2 (SplayTree k1 v1 r2 r1))
+splayLeft h@(SplayTree _ _ _ Leaf _) = h
+splayLeft (SplayTree k1 v1 d1 (SplayTree k2 v2 _ l2 r2) r1) = 
+  splayLeft $ (SplayTree k2 v2 d1 l2 (SplayTree k1 v1 (d1 - (rank l2)) r2 r1))
 
 -- | /O(n lg n)/. Constructs a splay tree from an unsorted list of key-value pairs.
 fromList :: (Ord k) => [(k,v)] -> SplayTree k v
@@ -92,6 +111,6 @@ toList = toAscList
 
 -- | /O(n lg n)/. 'toAscList' converts a splay tree to a list of key-value pairs sorted in ascending order.
 toAscList :: (Ord k) => SplayTree k v -> [(k,v)]
-toAscList h@(SplayTree _ _ Leaf _) = (head h):(toAscList $ tail h)
+toAscList h@(SplayTree _ _ _ Leaf _) = (head h):(toAscList $ tail h)
 toAscList Leaf = []
 toAscList h = toAscList $ splayLeft h
