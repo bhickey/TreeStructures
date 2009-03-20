@@ -51,8 +51,8 @@ insert :: (Ord k) => AVLTree k v -> (k,v) -> AVLTree k v
 insert Leaf (k,v) = singleton (k,v)
 insert t@(AVLTree k1 v1 s h l r) (k,v) =
  if k <= k1
- then balanceLeft  (\ x y -> x < y) (insert l (k,v)) t
- else balanceRight (\ x y -> x < y) t (insert r (k,v))
+ then balanceLeft  (\ x y -> x < y + 1) (insert l (k,v)) t
+ else balanceRight (\ x y -> x < y + 1) t (insert r (k,v))
 
 remove :: (Ord k) => AVLTree k v -> k -> AVLTree k v
 remove Leaf _ = Leaf
@@ -62,8 +62,8 @@ remove t@(AVLTree k1 v1 s h l r) k =
  if k == k1
  then (remove' l)
  else if k < k1
-      then balanceLeft  (\ x y -> x < y + 1) (remove l k) t
-      else balanceRight (\ x y -> x < y + 1) t (remove r k)
+      then balanceLeft  (\ x y -> x + 1 > y) (remove l k) t
+      else balanceRight (\ x y -> x + 1 > y) t (remove r k)
 
 remove' :: (Ord k) => AVLTree k v -> AVLTree k v
 remove' t = t
