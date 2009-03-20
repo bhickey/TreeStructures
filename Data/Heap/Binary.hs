@@ -34,8 +34,8 @@ singleton a = Node a 1 Leaf Leaf
 merge :: (Ord a) => BinaryHeap a -> BinaryHeap a -> BinaryHeap a
 merge Leaf n = n
 merge n Leaf = n
-merge h1@(Node n1 d1 h1l h1r) h2@(Node _ d2 _ _) = 
-  if head h1 == head h2 || h1 <= h2
+merge h1@(Node n1 d1 h1l h1r) h2@(Node n2 d2 _ _) = 
+  if n1 == n2 || h1 <= h2
   then if rank h1l < rank h1r
        then (Node n1 (d1 + d2) (merge h1l h2) h1r)
        else (Node n1 (d1 + d2) h1l (merge h1r h2))
