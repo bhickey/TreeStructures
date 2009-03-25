@@ -24,7 +24,7 @@ null _ = False
 singleton :: (Ord a) => a -> SkewHeap a
 singleton n = SkewHeap n SkewLeaf SkewLeaf
 
-insert :: (Ord a) => SkewHeap a -> a -> SkewHeap a
+insert :: (Ord a) => a -> SkewHeap a -> SkewHeap a
 insert h a = merge h (singleton a)
 
 merge :: (Ord a) => SkewHeap a -> SkewHeap a -> SkewHeap a

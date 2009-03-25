@@ -42,8 +42,8 @@ merge h1@(Node n1 d1 h1l h1r) h2@(Node n2 d2 _ _) =
   else merge h2 h1
 
 -- | /O(lg n)/.
-insert :: (Ord a) => BinaryHeap a -> a -> BinaryHeap a
-insert h a = merge h (singleton a)
+insert :: (Ord a) => a -> BinaryHeap a -> BinaryHeap a
+insert a h = merge h (singleton a)
 
 -- | /O(1)/.
 null :: (Ord a) => BinaryHeap a -> Bool

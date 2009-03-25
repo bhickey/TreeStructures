@@ -44,8 +44,8 @@ singleton :: (Ord a) => a -> BinomialHeap a
 singleton n = Heap [HeapNode n 1 []]
 
 -- | /O(lg n)/
-insert :: (Ord a) => BinomialHeap a -> a -> BinomialHeap a
-insert h n = merge (singleton n) h
+insert :: (Ord a) => a -> BinomialHeap a -> BinomialHeap a
+insert a h = merge (singleton a) h
 
 -- | /O(lg n)/.
 merge :: (Ord a) => BinomialHeap a -> BinomialHeap a -> BinomialHeap a
