@@ -131,3 +131,8 @@ fromList :: (Ord k) => [(k,v)] -> AVLTree k v
 fromList [] = Leaf
 fromList ((k,v):[]) = singleton k v
 fromList ((k,v):tl) = insert k v (fromList tl)
+
+-- TODO implement an instance of foldable so that this can be concisely defined
+toList :: (Ord k) => AVLTree k v -> [(k,v)]
+toList Leaf = []
+toList t@(AVLTree k v _ _ l r) = (toList l) ++ (k,v):(toList r)
