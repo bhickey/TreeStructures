@@ -1,7 +1,7 @@
 Name:               TreeStructures
-Version:            0.0.1
+Version:            0.0.2
 Synopsis:           A collection of heaps and search trees
-Description:        This package presently includes binary heaps, binomial heaps, skew heaps and splay trees.
+Description:        This package presently includes binary heaps, binomial heaps, skew heaps, splay trees, and AVL trees.
 License:            BSD3
 License-file:       LICENSE
 Author:             Brendan Hickey
@@ -18,4 +18,5 @@ Library
                     Data.Heap.Binomial 
                     Data.Heap.Skew
                     Data.Tree.Splay
+                    Data.Tree.AVL
   ghc-options:      -Wall

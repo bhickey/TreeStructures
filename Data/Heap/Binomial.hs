@@ -91,13 +91,7 @@ tail (Heap hn) =
 
 -- | /O(n)/
 fromList :: (Ord a, Eq a) => [a] -> BinomialHeap a
-fromList [] = EmptyHeap
-fromList l =  (\ ((hd:_):_) -> hd) $ dropWhile (\ x -> length x > 1) $ iterate (pairWise merge) $! map singleton l
-
-pairWise :: (a -> a -> a) -> [a] -> [a] 
-pairWise _ [] = []
-pairWise f (a:b:tl) = (f a b):(pairWise f tl)
-pairWise _ a = a
+fromList =  foldl merge EmptyHeap . map singleton
 
 -- | /O(n lg n)/
 toList :: (Ord a) => BinomialHeap a -> [a]

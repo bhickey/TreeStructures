@@ -11,10 +11,10 @@ import Prelude hiding (head, tail, (!!))
 
 data AVLTree k v =
     Leaf
-  | AVLTree k v Int Int (AVLTree k v) (AVLTree k v) deriving (Ord, Eq)
+  | AVLTree k v Int Int (AVLTree k v) (AVLTree k v) deriving (Ord, Eq, Show)
 
 singleton :: (Ord k) => (k,v) -> AVLTree k v
-singleton (k,v) = AVLTree k v 1 0 Leaf Leaf
+singleton (k,v) = AVLTree k v 1 1 Leaf Leaf
 
 empty :: (Ord k) => AVLTree k v
 empty = Leaf
@@ -31,8 +31,11 @@ height :: AVLTree k v -> Int
 height Leaf = 0
 height (AVLTree _ _ _ h _ _) = h
 
-maxHeight :: AVLTree k v -> AVLTree k v -> Int
-maxHeight a b = max (height a) (height b)
+findHeight :: AVLTree k v -> AVLTree k v -> Int
+findHeight a b = 1 + max (height a) (height b)
+
+findSize :: AVLTree k v -> AVLTree k v -> Int
+findSize a b = 1 + size a + size b
 
 (!!) :: (Ord k) => AVLTree k v -> Int -> (k,v)
 (!!) Leaf _ = error "index out of bounds"
@@ -50,37 +53,43 @@ maxHeight a b = max (height a) (height b)
 insert :: (Ord k) => AVLTree k v -> (k,v) -> AVLTree k v
 insert Leaf (k,v) = singleton (k,v)
 insert t@(AVLTree k1 v1 s h l r) (k,v) =
- if k <= k1
- then balanceLeft  (\ x y -> x < y + 1) (insert l (k,v)) t
- else balanceRight (\ x y -> x < y + 1) t (insert r (k,v))
+  if k <= k1
+  then let l' = insert l (k,v) in
+    balance (AVLTree k1 v1 (s + 1) (findHeight l' r) l' r)
+  else let r' = insert r (k,v) in
+    balance (AVLTree k1 v1 (s + 1) (findHeight l r') l r')
 
+{-
 remove :: (Ord k) => AVLTree k v -> k -> AVLTree k v
 remove Leaf _ = Leaf
 remove t@(AVLTree k1 _ _ _ Leaf Leaf) k = if k == k1 then Leaf else t
-
 remove t@(AVLTree k1 v1 s h l r) k =
  if k == k1
  then (remove' l)
  else if k < k1
-      then balanceLeft  (\ x y -> x + 1 > y) (remove l k) t
-      else balanceRight (\ x y -> x + 1 > y) t (remove r k)
-
+      then balance (AVLTree k1 v1 0 0 (remove l k) r)
+      else balance (AVLTree k1 v1 0 0 l (remove r k))
+ 
 remove' :: (Ord k) => AVLTree k v -> AVLTree k v
 remove' t = t
+-}
 
-balanceLeft  :: (Ord k) => (Int -> Int -> Bool) -> AVLTree k v -> AVLTree k v -> AVLTree k v
-balanceLeft f l@(AVLTree kc vc sc hc lc rc) p@(AVLTree kp vp sp hp _ rp) =
-  if f hc (height rp)
-  then (AVLTree kp vp (1 + size rp + size l) (1 + maxHeight l rp) l rp)
-  else let child = (AVLTree kp vp (1 + size rc + size rp) (1 + maxHeight rc rp) rc rp) in
-         (AVLTree kc vc (2 + size lc + size rc + size rp) (1 + maxHeight lc child) lc child)
-
-balanceRight :: (Ord k) => (Int -> Int -> Bool) -> AVLTree k v -> AVLTree k v -> AVLTree k v
-balanceRight f p@(AVLTree kp vp sp hp lp _) r@(AVLTree kc vc sc hc lc rc) =
-  if f hc (height lp)
-  then (AVLTree kp vp (1 + size lp + size rc) (1 + maxHeight lp r) lp rc)
-  else let child = (AVLTree kp vp (1 + size rc + size lp) (1 + maxHeight lp lc) lp lc) in
-         (AVLTree kc vc (2 + size lc + size rc + size lp) (1 + maxHeight child rc) child rc)
+balance :: (Ord k) => AVLTree k v -> AVLTree k v
+balance Leaf = Leaf
+balance t@(AVLTree k v _ _ l r) =
+  if (abs $ (height l) - (height r)) < 2
+    then (AVLTree k v (findSize l r) (findHeight l r) l r) -- this avoids the nonsense of tracking this information pre-balance
+  else if (height l) < (height r)
+       then case r of
+              Leaf -> error "cannot promote a leaf" -- this should never happen
+              (AVLTree k1 v1 _ _ l1 r1) -> 
+                let child = (AVLTree k v (findSize l l1) (findHeight l l1) l l1) in
+                  (AVLTree k1 v1 (findSize child r1) (findHeight child r1) child r1)  
+        else case l of
+              Leaf -> error "cannot promote a leaf"
+              (AVLTree k1 v1 _ _ l1 r1) -> 
+                let child = (AVLTree k v (findSize r1 r) (findHeight r1 r) r1 r) in
+                  (AVLTree k1 v1 (findSize l1 child) (findHeight l1 child) l1 child)
 
 head :: (Ord k) => AVLTree k v -> (k,v)
 head Leaf = error "took the head of an empty tree"
@@ -109,14 +118,14 @@ getRight t@(AVLTree k v s h Leaf Leaf) = ((k,v), Leaf)
 getRight t@(AVLTree k v s h l Leaf) = ((k,v), l)
 getRight t@(AVLTree k v s h l r) = 
   case getRight r of
-    (p, t2) -> (p, balanceRight (\ x y -> x + 1 > y) t t2)
+    (p, t2) -> (p, balance (AVLTree k v 0 0 l t2))
 
 getLeft :: (Ord k) => AVLTree k v -> ((k,v), AVLTree k v)
 getLeft t@(AVLTree k v s h Leaf Leaf) = ((k,v), Leaf)
 getLeft t@(AVLTree k v s h Leaf r) = ((k,v), r)
 getLeft t@(AVLTree k v s h l r) = 
   case getLeft r of
-    (p, t2) -> (p, balanceLeft (\ x y -> x + 1 > y) t2 t)
+    (p, t2) -> (p, (AVLTree k v 0 0 t2 r))
 
 fromList :: (Ord k) => [(k,v)] -> AVLTree k v
 fromList [] = Leaf
