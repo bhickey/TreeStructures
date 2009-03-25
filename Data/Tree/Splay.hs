@@ -31,16 +31,16 @@ size Leaf = 0
 size (SplayTree _ _ d _ _) = d
 
 -- | /Amortized O(lg n)/. Given a splay tree and a key, 'lookup' attempts to find a node with the specified key and splays this node to the root. If the key is not found, the nearest node is brought to the root of the tree.
-lookup :: (Ord k) => SplayTree k v -> k -> SplayTree k v
-lookup Leaf _ = Leaf
-lookup t@(SplayTree k v d l r) sk =
-  if sk == k
+lookup :: (Ord k) => k -> SplayTree k v -> SplayTree k v
+lookup _ Leaf = Leaf
+lookup k' t@(SplayTree k v d l r) =
+  if k' == k
   then t
-  else if k > sk
-       then case lookup l sk of
+  else if k > k'
+       then case lookup k' l of
               Leaf -> t
               lt -> zig lt t
-       else case lookup r sk of
+       else case lookup k' r of
               Leaf -> t
               rt -> zag t rt
 
@@ -91,9 +91,9 @@ zag (SplayTree k v d l r) (SplayTree k1 v1 d1 l1 r1) =
   (SplayTree k1 v1 d (SplayTree k v (d - (size r1) - 1) l l1) r1)
 
 -- | /Amortized O(lg n)/. Given a splay tree and a key-value pair, 'insert' places the the pair into the tree in BST order. This function is unsatisfying.
-insert :: (Ord k) => SplayTree k v -> (k,v) -> SplayTree k v
-insert t (k,v) =
-  case lookup t k of
+insert :: (Ord k) => k -> v -> SplayTree k v -> SplayTree k v
+insert k v t =
+  case lookup k t of
     Leaf -> (SplayTree k v 0 Leaf Leaf)
     (SplayTree k1 v1 d l r) ->
         if k1 < k
@@ -115,6 +115,17 @@ tail (SplayTree _ _ _ l r)    =
     (SplayTree k v d l1 Leaf) -> (SplayTree k v (d + size r) l1 r)
     _ -> error "splay tree corruption"
 
+delete :: (Ord k) => k -> SplayTree k v -> SplayTree k v
+delete _ Leaf = Leaf
+delete k t = 
+  case lookup k t of
+    t@(SplayTree k1 v1 _ l r) -> 
+      if k == k1
+      then tail t
+      else t
+    Leaf -> error "splay tree corruption"
+
+
 splayRight :: (Ord k) => SplayTree k v -> SplayTree k v
 splayRight Leaf = Leaf
 splayRight h@(SplayTree _ _ _ _ Leaf) = h
@@ -130,7 +141,7 @@ splayLeft (SplayTree k1 v1 d1 (SplayTree k2 v2 _ l2 r2) r1) =
 -- | /O(n lg n)/. Constructs a splay tree from an unsorted list of key-value pairs.
 fromList :: (Ord k) => [(k,v)] -> SplayTree k v
 fromList [] = Leaf
-fromList l = foldl (\ acc x -> insert acc x) Leaf l
+fromList l = foldl (\ acc (k,v) -> insert k v acc) Leaf l
 
 -- | /O(n lg n)/. Constructs a splay tree from a list of key-value pairs sorted in ascending order.
 fromAscList :: (Ord k) => [(k,v)] -> SplayTree k v
