@@ -12,7 +12,7 @@ import Prelude hiding (head, tail, null)
 
 data (Ord n) => BinaryHeap n =
     Leaf
-  | Node n Int (BinaryHeap n) (BinaryHeap n) deriving (Eq, Ord)
+  | Node n !Int (BinaryHeap n) (BinaryHeap n) deriving (Eq, Ord)
 
 instance (Ord n, Show n) => Show (BinaryHeap n) where
   show Leaf = "Leaf"

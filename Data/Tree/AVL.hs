@@ -4,7 +4,7 @@
 --
 
 module Data.Tree.AVL
-(AVLTree, head, tail, singleton, empty, null, fromList, insert, delete, lookup, (!!), size) 
+(AVLTree, head, tail, singleton, empty, null, fromList, fromAscList, toList, toAscList, insert, delete, lookup, (!!), size) 
 where
 
 import Prelude hiding (head, tail, (!!), lookup, null)
@@ -13,7 +13,7 @@ import Control.Monad.ST
 
 data AVLTree k v =
     Leaf
-  | AVLTree k v Int Int (AVLTree k v) (AVLTree k v) deriving (Ord, Eq, Show)
+  | AVLTree k v !Int !Int (AVLTree k v) (AVLTree k v) deriving (Ord, Eq, Show)
 
 singleton :: (Ord k) => k -> v -> AVLTree k v
 singleton k v = AVLTree k v 1 1 Leaf Leaf
@@ -127,12 +127,17 @@ getLeft t@(AVLTree k v s h l r) =
   case getLeft r of
     (p, t2) -> (p, (AVLTree k v (findSize r t2) (findHeight r t2) t2 r))
 
+
 fromList :: (Ord k) => [(k,v)] -> AVLTree k v
 fromList [] = Leaf
 fromList ((k,v):[]) = singleton k v
 fromList ((k,v):tl) = insert k v (fromList tl)
 
+fromAscList k = fromList k
+
 -- TODO implement an instance of foldable so that this can be concisely defined
-toList :: (Ord k) => AVLTree k v -> [(k,v)]
-toList Leaf = []
-toList t@(AVLTree k v _ _ l r) = (toList l) ++ (k,v):(toList r)
+toAscList :: (Ord k) => AVLTree k v -> [(k,v)]
+toAscList Leaf = []
+toAscList t@(AVLTree k v _ _ l r) = (toAscList l) ++ (k,v):(toAscList r)
+
+toList k = toAscList k
