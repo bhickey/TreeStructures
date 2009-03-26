@@ -13,7 +13,7 @@ import Control.Monad.ST
 
 data AVLTree k v =
     Leaf
-  | AVLTree k v !Int !Int (AVLTree k v) (AVLTree k v) deriving (Ord, Eq, Show)
+  | AVLTree !k !v !Int !Int !(AVLTree k v) !(AVLTree k v) deriving (Ord, Eq, Show)
 
 singleton :: (Ord k) => k -> v -> AVLTree k v
 singleton k v = AVLTree k v 1 1 Leaf Leaf
@@ -82,7 +82,7 @@ lookup _ Leaf = Nothing
 lookup k' t@(AVLTree k v _ _ l r) =
   if k == k'
   then Just v
-  else if k < k'
+  else if k' < k
        then lookup k' l
        else lookup k' r
 
