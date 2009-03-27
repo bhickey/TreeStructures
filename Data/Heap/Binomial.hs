@@ -10,11 +10,11 @@ where
 import Prelude hiding (head, tail, null)
 import Data.List (delete)
 
-data (Ord a, Ord b, Eq a, Eq b) => HeapNode a b = HeapNode a Int [b]
+data (Ord a, Ord b, Eq a, Eq b) => HeapNode a b = HeapNode a {-# UNPACK #-} !Int [b]
 
 data (Ord a, Eq a) => BinomialHeap a = 
     EmptyHeap
-  | Heap [HeapNode a (BinomialHeap a)] deriving (Eq, Ord)
+  | Heap {-# UNPACK #-} ![HeapNode a (BinomialHeap a)] deriving (Eq, Ord)
 
 instance (Ord a, Ord b, Eq a, Eq b) => Ord (HeapNode a b) where
   compare (HeapNode e1 _ _) (HeapNode e2 _ _) = compare e1 e2
