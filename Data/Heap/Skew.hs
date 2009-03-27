@@ -25,7 +25,7 @@ singleton :: (Ord a) => a -> SkewHeap a
 singleton n = SkewHeap n SkewLeaf SkewLeaf
 
 insert :: (Ord a) => a -> SkewHeap a -> SkewHeap a
-insert h a = merge h (singleton a)
+insert a h = merge h (singleton a)
 
 merge :: (Ord a) => SkewHeap a -> SkewHeap a -> SkewHeap a
 merge SkewLeaf n = n
