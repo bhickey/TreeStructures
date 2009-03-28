@@ -63,9 +63,8 @@ toList (SkewHeap n l r) = n:(toList $ merge l r)
 
 fromList :: (Ord a) => [a] -> SkewHeap a
 fromList [] = SkewLeaf
-fromList l =  (\ ((hd:_):_) -> hd) $! dropWhile (\ x -> length x > 1) $ iterate (pairWise merge) $ map singleton l
-
-pairWise :: (a -> a -> a) -> [a] -> [a] 
-pairWise _ [] = []
-pairWise f (a:b:tl) = (f a b):(pairWise f tl)
-pairWise _ a = a
+fromList l = mergeList (map singleton l)
+              where mergeList [a] = a
+                    mergeList x = mergeList (mergePairs x)
+                    mergePairs (a:b:c) = (merge a b):(mergePairs c)
+                    mergePairs x = x

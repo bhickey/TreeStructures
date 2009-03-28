@@ -35,7 +35,7 @@ merge :: (Ord a) => BinaryHeap a -> BinaryHeap a -> BinaryHeap a
 merge Leaf n = n
 merge n Leaf = n
 merge h1@(Node n1 d1 h1l h1r) h2@(Node n2 d2 _ _) = 
-  if n1 == n2 || h1 <= h2
+  if  (n1<n2 || (n1==n2 d1<=d2))
   then if rank h1l < rank h1r
        then (Node n1 (d1 + d2) (merge h1l h2) h1r)
        else (Node n1 (d1 + d2) h1l (merge h1r h2))
@@ -58,12 +58,11 @@ toList h@(Node _ _ _ _) = (head h):(toList $ tail h)
 -- | /O(n)/. 'fromList' constructs a binary heap from an unsorted list.
 fromList :: (Ord a) => [a] -> BinaryHeap a
 fromList [] = Leaf
-fromList l =  (\ ((hd:_):_) -> hd) $! dropWhile (\ x -> length x > 1) $ iterate (pairWise merge) $ map singleton l
-
-pairWise :: (a -> a -> a) -> [a] -> [a] 
-pairWise _ [] = []
-pairWise f (a:b:tl) = (f a b):(pairWise f tl)
-pairWise _ a = a
+fromList l = mergeList (map singleton l)
+              where mergeList [a] = a
+                    mergeList x = mergeList (mergePairs x)
+                    mergePairs (a:b:c) = (merge a b):(mergePairs c)
+                    mergePairs x = x
 
 -- | /O(1)/. 'head' returns the element root of the heap.
 head :: (Ord a) => BinaryHeap a -> a
