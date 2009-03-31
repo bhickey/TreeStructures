@@ -35,7 +35,7 @@ merge :: (Ord a) => BinaryHeap a -> BinaryHeap a -> BinaryHeap a
 merge Leaf n = n
 merge n Leaf = n
 merge h1@(Node n1 d1 h1l h1r) h2@(Node n2 d2 _ _) = 
-  if  (n1<n2 || (n1==n2 d1<=d2))
+  if  (n1<n2 || (n1==n2 && d1<=d2))
   then if rank h1l < rank h1r
        then (Node n1 (d1 + d2) (merge h1l h2) h1r)
        else (Node n1 (d1 + d2) h1l (merge h1r h2))

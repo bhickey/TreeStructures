@@ -4,7 +4,7 @@
 --
 
 module Data.Tree.Splay 
-(SplayTree, head, tail, singleton, empty, null, fromList, fromAscList, toList, toAscList, insert, lookup, (!!), splay, size) 
+(SplayTree, head, tail, singleton, empty, null, fromList, fromAscList, toList, toAscList, insert, lookup, (!!), splay, size, delete) 
 where
 
 import Prelude hiding (head, tail, lookup, null, (!!))
@@ -33,7 +33,7 @@ size (SplayTree _ _ d _ _) = d
 -- | /Amortized O(lg n)/. Given a splay tree and a key, 'lookup' attempts to find a node with the specified key and splays this node to the root. If the key is not found, the nearest node is brought to the root of the tree.
 lookup :: (Ord k) => k -> SplayTree k v -> SplayTree k v
 lookup _ Leaf = Leaf
-lookup k' t@(SplayTree k v d l r) =
+lookup k' t@(SplayTree k _ _ l r) =
   if k' == k
   then t
   else if k > k'
@@ -61,7 +61,7 @@ lookup k' t@(SplayTree k v d l r) =
 -- | Splays the i^{th} element in BST order
 splay :: (Ord k) => SplayTree k v -> Int -> SplayTree k v
 splay Leaf _ = error "index out of bounds"
-splay t@(SplayTree k v d l r) n =
+splay t@(SplayTree _ _ d l r) n =
   if n > d
   then error "index out of bounds"
   else 
@@ -80,14 +80,14 @@ splay t@(SplayTree k v d l r) n =
 zig :: (Ord k) => SplayTree k v -> SplayTree k v -> SplayTree k v
 zig Leaf _ = error "tree corruption"
 zig _ Leaf = error "tree corruption"
-zig (SplayTree k1 v1 d1 l1 r1) (SplayTree k v d l r) =
+zig (SplayTree k1 v1 _ l1 r1) (SplayTree k v d _ r) =
   (SplayTree k1 v1 d l1 (SplayTree k v (d - (size l1) - 1) r1 r))
 
 -- | /O(1)/. zig rotates its second argument up
 zag :: (Ord k) => SplayTree k v -> SplayTree k v -> SplayTree k v
 zag Leaf _ = error "tree corruption"
 zag _ Leaf = error "tree corruption"
-zag (SplayTree k v d l r) (SplayTree k1 v1 d1 l1 r1) =
+zag (SplayTree k v d l _) (SplayTree k1 v1 _ l1 r1) =
   (SplayTree k1 v1 d (SplayTree k v (d - (size r1) - 1) l l1) r1)
 
 -- | /Amortized O(lg n)/. Given a splay tree and a key-value pair, 'insert' places the the pair into the tree in BST order. This function is unsatisfying.
@@ -119,10 +119,10 @@ delete :: (Ord k) => k -> SplayTree k v -> SplayTree k v
 delete _ Leaf = Leaf
 delete k t = 
   case lookup k t of
-    t@(SplayTree k1 v1 _ l r) -> 
+    t'@(SplayTree k1 _ _ _ _) -> 
       if k == k1
-      then tail t
-      else t
+      then tail t'
+      else t'
     Leaf -> error "splay tree corruption"
 
 
