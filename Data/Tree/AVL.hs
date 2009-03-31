@@ -9,7 +9,7 @@ where
 
 import Prelude hiding (head, tail, (!!), lookup, null)
 import Data.Maybe
-import Control.Monad.ST
+
 
 data AVLTree k v =
     Leaf
@@ -79,7 +79,7 @@ balance t@(AVLTree k v _ _ l r) =
 
 lookup :: (Ord k) => k -> AVLTree k v -> Maybe v
 lookup _ Leaf = Nothing
-lookup k' t@(AVLTree k v _ _ l r) =
+lookup k' (AVLTree k v _ _ l r) =
   if k == k'
   then Just v
   else if k' < k
@@ -88,7 +88,7 @@ lookup k' t@(AVLTree k v _ _ l r) =
 
 insert :: (Ord k) => k -> v -> AVLTree k v -> AVLTree k v
 insert k v Leaf = singleton k v
-insert k v t@(AVLTree k1 v1 s h l r) =
+insert k v (AVLTree k1 v1 s _ l r) =
   if k <= k1
   then let l' = insert k v l in
     balance (AVLTree k1 v1 (s + 1) (findHeight l' r) l' r)
@@ -101,43 +101,50 @@ delete k t@(AVLTree k1 _ _ _ Leaf Leaf) = if k == k1 then Leaf else t
 delete k t@(AVLTree k1 v1 _ _ l r) =
  if k == k1
  then case t of
-        (AVLTree _ _ _ _ Leaf r) ->
-          let ((k', v'), r') = getLeft r in
-            balance (AVLTree k' v' (findSize Leaf r') (findHeight Leaf r') Leaf r')
-        (AVLTree _ _ _ _ l r ) ->
-          let ((k', v'), l') = getRight l in
-            balance (AVLTree k' v' (findSize l' r) (findHeight l' r) l' r)
+        Leaf -> Leaf
+        (AVLTree _ _ _ _ Leaf r1) ->
+          case getLeft r1 of
+            (Nothing, _) -> Leaf
+            (Just (k', v'), r') ->
+              balance (AVLTree k' v' (findSize Leaf r') (findHeight Leaf r') Leaf r')
+        (AVLTree _ _ _ _ l1 r1 ) ->
+          case getRight l1 of
+            (Nothing, _) -> Leaf
+            (Just (k', v'), l') -> balance (AVLTree k' v' (findSize l' r1) (findHeight l' r1) l' r1)
  else if k < k1
       then let l' = delete k l in
              balance (AVLTree k1 v1 (findSize l' r) (findHeight l' r) l' r)
       else let r' = delete k r in
              balance (AVLTree k1 v1 (findSize l r') (findHeight l r') l r')
 
-getRight :: (Ord k) => AVLTree k v -> ((k,v), AVLTree k v)
-getRight t@(AVLTree k v s h Leaf Leaf) = ((k,v), Leaf)
-getRight t@(AVLTree k v s h l Leaf) = ((k,v), l)
-getRight t@(AVLTree k v s h l r) = 
+getRight :: (Ord k) => AVLTree k v -> (Maybe (k,v), AVLTree k v)
+getRight Leaf = (Nothing, Leaf)
+getRight (AVLTree k v _ _ Leaf Leaf) = (Just (k,v), Leaf)
+getRight (AVLTree k v _ _ l Leaf) = (Just (k,v), l)
+getRight (AVLTree k v _ _ l r) = 
   case getRight r of
     (p, t2) -> (p, balance (AVLTree k v (findSize l t2) (findHeight l t2) l t2))
 
-getLeft :: (Ord k) => AVLTree k v -> ((k,v), AVLTree k v)
-getLeft t@(AVLTree k v s h Leaf Leaf) = ((k,v), Leaf)
-getLeft t@(AVLTree k v s h Leaf r) = ((k,v), r)
-getLeft t@(AVLTree k v s h l r) = 
+getLeft :: (Ord k) => AVLTree k v -> (Maybe (k,v), AVLTree k v)
+getLeft Leaf = (Nothing, Leaf)
+getLeft (AVLTree k v _ _ Leaf Leaf) = (Just (k,v), Leaf)
+getLeft (AVLTree k v _ _ Leaf r) = (Just (k,v), r)
+getLeft (AVLTree k v _ _ _ r) = 
   case getLeft r of
     (p, t2) -> (p, (AVLTree k v (findSize r t2) (findHeight r t2) t2 r))
-
 
 fromList :: (Ord k) => [(k,v)] -> AVLTree k v
 fromList [] = Leaf
 fromList ((k,v):[]) = singleton k v
 fromList ((k,v):tl) = insert k v (fromList tl)
 
+fromAscList :: (Ord k) => [(k,v)] -> AVLTree k v
 fromAscList k = fromList k
 
 -- TODO implement an instance of foldable so that this can be concisely defined
 toAscList :: (Ord k) => AVLTree k v -> [(k,v)]
 toAscList Leaf = []
-toAscList t@(AVLTree k v _ _ l r) = (toAscList l) ++ (k,v):(toAscList r)
+toAscList (AVLTree k v _ _ l r) = (toAscList l) ++ (k,v):(toAscList r)
 
+toList :: (Ord k) => AVLTree k v -> [(k,v)]
 toList k = toAscList k
