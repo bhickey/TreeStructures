@@ -6,7 +6,7 @@ License:            BSD3
 License-file:       LICENSE
 Author:             Brendan Hickey
 Maintainer:         brendan@bhickey.net
-Homepage:           http://hg.bhickey.net
+Homepage:           http://www.github.com/bhickey/TreeStructures
 Stability:          Experimental
 Category:           Data Structures
 Build-Type:         Simple
