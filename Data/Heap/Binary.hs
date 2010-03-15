@@ -16,7 +16,7 @@ data (Ord n) => BinaryHeap n =
 
 instance (Ord n, Show n) => Show (BinaryHeap n) where
   show Leaf = "Leaf"
-  show (Node n _ h1 h2) = "Node " ++ (show n) ++ " (" ++ (show h1) ++ " " ++ (show h2) ++ ")"
+  show (Node n _ h1 h2) = "Node " ++ show n ++ " (" ++ show h1 ++ " " ++ show h2 ++ ")"
 
 rank :: (Ord n) => BinaryHeap n -> Int
 rank Leaf = 0
@@ -35,10 +35,10 @@ merge :: (Ord a) => BinaryHeap a -> BinaryHeap a -> BinaryHeap a
 merge Leaf n = n
 merge n Leaf = n
 merge h1@(Node n1 d1 h1l h1r) h2@(Node n2 d2 _ _) = 
-  if  (n1<n2 || (n1==n2 && d1<=d2))
+  if  n1<n2 || (n1==n2 && d1<=d2)
   then if rank h1l < rank h1r
-       then (Node n1 (d1 + d2) (merge h1l h2) h1r)
-       else (Node n1 (d1 + d2) h1l (merge h1r h2))
+       then Node n1 (d1 + d2) (merge h1l h2) h1r
+       else Node n1 (d1 + d2) h1l (merge h1r h2)
   else merge h2 h1
 
 -- | /O(lg n)/.
@@ -53,7 +53,7 @@ null _    = False
 -- | /O(n lg n)/.
 toList :: (Ord a) => BinaryHeap a -> [a]
 toList Leaf = []
-toList h@(Node _ _ _ _) = (head h):(toList $ tail h)
+toList h@(Node _ _ _ _) = head h : toList (tail h)
 
 -- | /O(n)/. 'fromList' constructs a binary heap from an unsorted list.
 fromList :: (Ord a) => [a] -> BinaryHeap a
@@ -61,7 +61,7 @@ fromList [] = Leaf
 fromList l = mergeList (map singleton l)
               where mergeList [a] = a
                     mergeList x = mergeList (mergePairs x)
-                    mergePairs (a:b:c) = (merge a b):(mergePairs c)
+                    mergePairs (a:b:c) = merge a b : mergePairs c
                     mergePairs x = x
 
 -- | /O(1)/. 'head' returns the element root of the heap.
