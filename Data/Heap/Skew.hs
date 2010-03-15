@@ -1,6 +1,6 @@
 --
--- Copyright (c) 2009 Brendan Hickey - http://bhickey.net
--- Simplified BSD License (see http://www.opensource.org/licenses/bsd-license.php)
+-- Copyright (c) 2009 - 2010 Brendan Hickey - http://bhickey.net
+-- New BSD License (see http://www.opensource.org/licenses/bsd-license.php)
 --
 
 module Data.Heap.Skew 

@@ -1,6 +1,0 @@
-syntax: glob
-*.o
-*.hi
-*.swp
-*.bak
-*~
