@@ -36,13 +36,13 @@ listMerge :: (Ord b) => (a -> b) -> [a] -> [a] -> [a]
 listMerge _ [] s = s
 listMerge _ f [] = f
 listMerge c f@(h1:t1) s@(h2:t2) =
-  if (c h1) <= (c h2)
-  then h1:(listMerge c t1 s)
-  else h2:(listMerge c f t2)
+  if c h1  <= c h2
+  then h1 : listMerge c t1 s
+  else h2 : listMerge c f t2
 
 cutRight :: (Ord a) => SkewHeap a -> [SkewHeap a]
 cutRight SkewLeaf = []
-cutRight (SkewHeap a l r) = (SkewHeap a l SkewLeaf):(cutRight r)
+cutRight (SkewHeap a l r) =  SkewHeap a l SkewLeaf : cutRight r
 
 -- assumes h1 >= h2, merge relies on this
 assemble :: (Ord a) => SkewHeap a -> SkewHeap a -> SkewHeap a
@@ -59,12 +59,12 @@ tail (SkewHeap _ l r) = merge l r
 
 toList :: (Ord a) => SkewHeap a -> [a]
 toList SkewLeaf = []
-toList (SkewHeap n l r) = n:(toList $ merge l r)
+toList (SkewHeap n l r) = n : toList (merge l r)
 
 fromList :: (Ord a) => [a] -> SkewHeap a
 fromList [] = SkewLeaf
 fromList l = mergeList (map singleton l)
               where mergeList [a] = a
                     mergeList x = mergeList (mergePairs x)
-                    mergePairs (a:b:c) = (merge a b):(mergePairs c)
+                    mergePairs (a:b:c) =  merge a b : mergePairs c
                     mergePairs x = x
