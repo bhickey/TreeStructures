@@ -15,28 +15,35 @@ data AVLTree k v =
     Leaf
   | AVLTree !k !v !Int !Int !(AVLTree k v) !(AVLTree k v) deriving (Ord, Eq, Show)
 
+-- | /O(1)/. 'singleton' constructs a singleton AVL tree
 singleton :: (Ord k) => k -> v -> AVLTree k v
 singleton k v = AVLTree k v 1 1 Leaf Leaf
 
+-- | /O(1)/. 'empty' produces an empty tree
 empty :: (Ord k) => AVLTree k v
 empty = Leaf
 
+-- | /O(1)/. 'null' returns True if a tree is empty, otherwise False.
 null :: AVLTree k v -> Bool
 null Leaf = True
 null _    = False
 
+-- | /O(1)/. 'head' returns the head of a tree.
 head :: (Ord k) => AVLTree k v -> v
 head Leaf = error "took the head of an empty tree"
 head (AVLTree _ v _ _ _ _) = v
 
+-- | /O(lg n)/. 'tail' discards the head of the tree and returns a tree.
 tail :: (Ord k) => AVLTree k v -> AVLTree k v
 tail Leaf = error "took the tail of an empty tree"
 tail t@(AVLTree k _ _ _ _ _) = delete k t
 
+-- | /O(1)/. 'size' reports the number of children in a tree
 size :: AVLTree k v -> Int
 size Leaf = 0
 size (AVLTree _ _ s _ _ _) = s
 
+-- | /O(1)/. 'height' reports the maximum distance to a leaf.
 height :: AVLTree k v -> Int
 height Leaf = 0
 height (AVLTree _ _ _ h _ _) = h
@@ -66,10 +73,9 @@ balance t@(AVLTree k v _ _ l r)
 
 (!!) :: (Ord k) => AVLTree k v -> Int -> (k,v)
 (!!) Leaf _ = error "index out of bounds"
-(!!) (AVLTree k v d _ l r) n =
-  if n > d
-  then error "index out of bounds"
-  else 
+(!!) (AVLTree k v d _ l r) n
+  | n > d = error "index out of bounds"
+  | otherwise = 
     let l' = size l in
       if n == l'
       then (k,v)
@@ -77,6 +83,7 @@ balance t@(AVLTree k v _ _ l r)
            then l !! n
            else r !! (n - l' - 1)
 
+-- | /O(lg n)/.
 lookup :: (Ord k) => k -> AVLTree k v -> Maybe v
 lookup _ Leaf = Nothing
 lookup k' (AVLTree k v _ _ l r)
@@ -84,6 +91,7 @@ lookup k' (AVLTree k v _ _ l r)
   | k' < k = lookup k' l
   | otherwise = lookup k' r
 
+-- | /O(lg n)/.
 insert :: (Ord k) => k -> v -> AVLTree k v -> AVLTree k v
 insert k v Leaf = singleton k v
 insert k v (AVLTree k1 v1 s _ l r) =
@@ -93,6 +101,7 @@ insert k v (AVLTree k1 v1 s _ l r) =
   else let r' = insert k v r in
     balance (AVLTree k1 v1 (s + 1) (findHeight l r') l r')
 
+-- | /O(lg n)/.
 delete :: (Ord k) => k -> AVLTree k v -> AVLTree k v
 delete _ Leaf = Leaf
 delete k t@(AVLTree k1 _ _ _ Leaf Leaf) = if k == k1 then Leaf else t
@@ -133,18 +142,22 @@ getLeft (AVLTree k v _ _ _ r) =
   case getLeft r of
     (p, t2) -> (p, AVLTree k v (findSize r t2) (findHeight r t2) t2 r)
 
+-- | /O(n lg n)/.
 fromList :: (Ord k) => [(k,v)] -> AVLTree k v
 fromList [] = Leaf
 fromList ((k,v):[]) = singleton k v
 fromList ((k,v):tl) = insert k v (fromList tl)
 
+-- | /O(n lg n)/.
 fromAscList :: (Ord k) => [(k,v)] -> AVLTree k v
 fromAscList = fromList
 
 -- TODO implement an instance of foldable so that this can be concisely defined
+-- | /O(n lg n)/.
 toAscList :: (Ord k) => AVLTree k v -> [(k,v)]
 toAscList Leaf = []
 toAscList (AVLTree k v _ _ l r) = toAscList l ++ (k,v) : toAscList r
 
+-- | /O(n lg n)/.
 toList :: (Ord k) => AVLTree k v -> [(k,v)]
 toList = toAscList

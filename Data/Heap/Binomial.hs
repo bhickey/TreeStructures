@@ -96,4 +96,4 @@ fromList =  foldl merge EmptyHeap . map singleton
 toList :: (Ord a) => BinomialHeap a -> [a]
 toList EmptyHeap  = []
 toList (Heap [])  = []
-toList h@(Heap _) = head h : toList $ if null h then h else tail h
+toList h@(Heap _) = head h : (toList $ if null h then h else tail h)
