@@ -45,31 +45,30 @@ singleton n = Heap [HeapNode n 1 []]
 
 -- | /O(lg n)/
 insert :: (Ord a) => a -> BinomialHeap a -> BinomialHeap a
-insert a h = merge (singleton a) h
+insert a = merge (singleton a)
 
 -- | /O(lg n)/.
 merge :: (Ord a) => BinomialHeap a -> BinomialHeap a -> BinomialHeap a
 merge EmptyHeap n = n
 merge n EmptyHeap = n
-merge (Heap h1) (Heap h2) = Heap $! (mergeNodes h1 h2)
+merge (Heap h1) (Heap h2) = Heap $! mergeNodes h1 h2
 
 mergeNodes :: (Ord a, Eq a) => [HeapNode a (BinomialHeap a)] -> [HeapNode a (BinomialHeap a)] -> [HeapNode a (BinomialHeap a)]
 mergeNodes [] h  = h
 mergeNodes h  [] = h
-mergeNodes f@(h1:t1) s@(h2:t2) =
- if rank h1 == rank h2
- then let merged = (combine h1 h2) 
-          r = rank merged in
-      if r /= hRank t1
-      then if r /= hRank t2
-           then merged:(mergeNodes t1 t2)
-           else mergeNodes (merged:t1) t2
-      else if r /= hRank t2
-           then mergeNodes t1 (merged:t2)
-           else merged:(mergeNodes t1 t2)
- else if rank h1 < rank h2
-      then h1:(mergeNodes t1 s)
-      else h2:(mergeNodes t2 f)
+mergeNodes f@(h1 : t1) s@(h2 : t2)
+    | rank h1 == rank h2 =
+      let merged = combine h1 h2
+          r = rank merged
+        in
+        if r /= hRank t1 then
+          if r /= hRank t2 then merged : mergeNodes t1 t2 else
+            mergeNodes (merged : t1) t2
+          else
+          if r /= hRank t2 then mergeNodes t1 (merged : t2) else
+            merged : mergeNodes t1 t2
+    | rank h1 < rank h2 = h1 : mergeNodes t1 s
+    | otherwise = h2 : mergeNodes t2 f
 
 combine :: (Ord a, Eq a) => HeapNode a (BinomialHeap a) -> HeapNode a (BinomialHeap a) -> HeapNode a (BinomialHeap a)
 combine h1@(HeapNode e1 n1 l1) h2 =
@@ -97,4 +96,4 @@ fromList =  foldl merge EmptyHeap . map singleton
 toList :: (Ord a) => BinomialHeap a -> [a]
 toList EmptyHeap  = []
 toList (Heap [])  = []
-toList h@(Heap _) = (head h):(toList $ if null h then h else tail h)
+toList h@(Heap _) = head h : toList $ if null h then h else tail h
