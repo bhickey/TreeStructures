@@ -49,20 +49,20 @@ findSize a b = 1 + size a + size b
 
 balance :: (Ord k) => AVLTree k v -> AVLTree k v
 balance Leaf = Leaf
-balance t@(AVLTree k v _ _ l r) =
-  if (abs $ (height l) - (height r)) < 2
-    then t
-  else if (height l) < (height r)
-       then case r of
-              Leaf -> error "cannot promote a leaf" -- this should never happen
-              (AVLTree k1 v1 _ _ l1 r1) -> 
-                let child = (AVLTree k v (findSize l l1) (findHeight l l1) l l1) in
-                  (AVLTree k1 v1 (findSize child r1) (findHeight child r1) child r1)  
-        else case l of
-              Leaf -> error "cannot promote a leaf"
-              (AVLTree k1 v1 _ _ l1 r1) -> 
-                let child = (AVLTree k v (findSize r1 r) (findHeight r1 r) r1 r) in
-                  (AVLTree k1 v1 (findSize l1 child) (findHeight l1 child) l1 child)
+balance t@(AVLTree k v _ _ l r)
+  | abs (height l - height r) < 2 = t
+  | height l < height r =
+    case r of
+      Leaf -> error "cannot promote a leaf" -- this should never happen
+      (AVLTree k1 v1 _ _ l1 r1) -> 
+        let child = (AVLTree k v (findSize l l1) (findHeight l l1) l l1) in
+          (AVLTree k1 v1 (findSize child r1) (findHeight child r1) child r1)  
+  | otherwise = 
+    case l of
+      Leaf -> error "cannot promote a leaf"
+      (AVLTree k1 v1 _ _ l1 r1) -> 
+        let child = (AVLTree k v (findSize r1 r) (findHeight r1 r) r1 r) in
+          (AVLTree k1 v1 (findSize l1 child) (findHeight l1 child) l1 child)
 
 (!!) :: (Ord k) => AVLTree k v -> Int -> (k,v)
 (!!) Leaf _ = error "index out of bounds"
@@ -79,12 +79,10 @@ balance t@(AVLTree k v _ _ l r) =
 
 lookup :: (Ord k) => k -> AVLTree k v -> Maybe v
 lookup _ Leaf = Nothing
-lookup k' (AVLTree k v _ _ l r) =
-  if k == k'
-  then Just v
-  else if k' < k
-       then lookup k' l
-       else lookup k' r
+lookup k' (AVLTree k v _ _ l r)
+  | k == k' = Just v
+  | k' < k = lookup k' l
+  | otherwise = lookup k' r
 
 insert :: (Ord k) => k -> v -> AVLTree k v -> AVLTree k v
 insert k v Leaf = singleton k v
@@ -98,24 +96,26 @@ insert k v (AVLTree k1 v1 s _ l r) =
 delete :: (Ord k) => k -> AVLTree k v -> AVLTree k v
 delete _ Leaf = Leaf
 delete k t@(AVLTree k1 _ _ _ Leaf Leaf) = if k == k1 then Leaf else t
-delete k t@(AVLTree k1 v1 _ _ l r) =
- if k == k1
- then case t of
-        Leaf -> Leaf
-        (AVLTree _ _ _ _ Leaf r1) ->
-          case getLeft r1 of
-            (Nothing, _) -> Leaf
-            (Just (k', v'), r') ->
-              balance (AVLTree k' v' (findSize Leaf r') (findHeight Leaf r') Leaf r')
-        (AVLTree _ _ _ _ l1 r1 ) ->
-          case getRight l1 of
-            (Nothing, _) -> Leaf
-            (Just (k', v'), l') -> balance (AVLTree k' v' (findSize l' r1) (findHeight l' r1) l' r1)
- else if k < k1
-      then let l' = delete k l in
-             balance (AVLTree k1 v1 (findSize l' r) (findHeight l' r) l' r)
-      else let r' = delete k r in
-             balance (AVLTree k1 v1 (findSize l r') (findHeight l r') l r')
+delete k t@(AVLTree k1 v1 _ _ l r)
+  | k == k1 =
+    case t of
+      Leaf -> Leaf
+      (AVLTree _ _ _ _ Leaf r1) -> 
+        case getLeft r1 of
+          (Nothing, _) -> Leaf
+          (Just (k', v'), r') -> 
+            balance (AVLTree k' v' (findSize Leaf r') (findHeight Leaf r') Leaf r')
+      (AVLTree _ _ _ _ l1 r1) -> 
+        case getRight l1 of
+          (Nothing, _) -> Leaf
+          (Just (k', v'), l') -> 
+            balance (AVLTree k' v' (findSize l' r1) (findHeight l' r1) l' r1)
+    | k < k1 =
+      let l' = delete k l in
+        balance (AVLTree k1 v1 (findSize l' r) (findHeight l' r) l' r)
+    | otherwise =
+      let r' = delete k r in
+        balance (AVLTree k1 v1 (findSize l r') (findHeight l r') l r')
 
 getRight :: (Ord k) => AVLTree k v -> (Maybe (k,v), AVLTree k v)
 getRight Leaf = (Nothing, Leaf)
@@ -131,7 +131,7 @@ getLeft (AVLTree k v _ _ Leaf Leaf) = (Just (k,v), Leaf)
 getLeft (AVLTree k v _ _ Leaf r) = (Just (k,v), r)
 getLeft (AVLTree k v _ _ _ r) = 
   case getLeft r of
-    (p, t2) -> (p, (AVLTree k v (findSize r t2) (findHeight r t2) t2 r))
+    (p, t2) -> (p, AVLTree k v (findSize r t2) (findHeight r t2) t2 r)
 
 fromList :: (Ord k) => [(k,v)] -> AVLTree k v
 fromList [] = Leaf
@@ -139,12 +139,12 @@ fromList ((k,v):[]) = singleton k v
 fromList ((k,v):tl) = insert k v (fromList tl)
 
 fromAscList :: (Ord k) => [(k,v)] -> AVLTree k v
-fromAscList k = fromList k
+fromAscList = fromList
 
 -- TODO implement an instance of foldable so that this can be concisely defined
 toAscList :: (Ord k) => AVLTree k v -> [(k,v)]
 toAscList Leaf = []
-toAscList (AVLTree k v _ _ l r) = (toAscList l) ++ (k,v):(toAscList r)
+toAscList (AVLTree k v _ _ l r) = toAscList l ++ (k,v) : toAscList r
 
 toList :: (Ord k) => AVLTree k v -> [(k,v)]
-toList k = toAscList k
+toList = toAscList
