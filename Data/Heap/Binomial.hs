@@ -78,12 +78,12 @@ combine h1@(HeapNode e1 n1 l1) h2 =
 
 -- | /O(lg n)/
 head :: (Ord a) => BinomialHeap a -> a
-head EmptyHeap = error "Data.Heap: empty list"
+head EmptyHeap = error "Data.Heap.Binomial: empty heap"
 head (Heap hn) = extract $! minimum hn
 
 -- | /O(lg n)/
 tail :: (Ord a) => BinomialHeap a -> BinomialHeap a
-tail EmptyHeap = error "Data.Heap: empty list"
+tail EmptyHeap = error "Data.Heap.Binomial: empty heap"
 tail (Heap hn) = 
   let n@(HeapNode _ _ hd) = (minimum hn) in
     foldl merge (Heap (delete n hn)) hd
