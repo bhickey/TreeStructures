@@ -1,5 +1,5 @@
-import Char
-import List 
+import Data.Char
+import Data.List 
 import Test.QuickCheck
 import Text.Printf
 import qualified Data.Heap.Binary as B
@@ -30,15 +30,11 @@ splay_fromListToList s = (map fst . Y.toList . Y.fromList) s == (map fst . sort)
 
 
 tests = [
-    ("Heap.Binary:   toList.fromList/sort", test binary_fromListToList),
-    ("Heap.Binomial: toList.fromList/sort", test binomial_fromListToList),
-    ("Heap.Pairing:  toList.fromList/sort", test pair_fromListToList),
-    ("Heap.Skew:     toList.fromList/sort", test skew_fromListToList),
-    ("Tree.AVL:      toList.fromList/sort", test avl_fromListToList),
-    ("Tree.Splay:    toList.fromList/sort", test splay_fromListToList)]
+    ("Heap.Binary:   toList.fromList/sort", quickCheck binary_fromListToList),
+    ("Heap.Binomial: toList.fromList/sort", quickCheck binomial_fromListToList),
+    ("Heap.Pairing:  toList.fromList/sort", quickCheck pair_fromListToList),
+    ("Heap.Skew:     toList.fromList/sort", quickCheck skew_fromListToList),
+    ("Tree.AVL:      toList.fromList/sort", quickCheck avl_fromListToList),
+    ("Tree.Splay:    toList.fromList/sort", quickCheck splay_fromListToList)]
 
 main  = mapM_ (\(s,a) -> printf "%-25s: " s >> a) tests
- 
-instance Arbitrary Char where
-    arbitrary     = choose ('\0', '\128')
-    coarbitrary c = variant (ord c `rem` 4)
