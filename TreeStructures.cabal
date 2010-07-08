@@ -15,7 +15,7 @@ Cabal-Version:      >=1.2
 extra-source-files: Tests.hs README
 
 Library
-  Build-Depends:    base >= 2 && < 4, QuickCheck >= 2.1
+  Build-Depends:    base >= 2 && < 5, QuickCheck >= 2.1
   Exposed-modules:  Data.Heap.Binary 
                     Data.Heap.Binomial
                     Data.Heap.Pairing
