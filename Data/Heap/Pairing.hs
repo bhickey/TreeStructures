@@ -1,3 +1,4 @@
+{-# LANGUAGE RankNTypes #-}
 --
 -- Copyright (c) 2010 Brendan Hickey - http://bhickey.net
 -- New BSD License (see http://www.opensource.org/licenses/bsd-license.php)
@@ -8,7 +9,6 @@ module Data.Heap.Pairing
 where
 
 import Prelude hiding (head, tail, null)
-import qualified Data.List as L
 
 data (Ord a) => PairingHeap a =
       EmptyHeap
@@ -60,7 +60,10 @@ toList = toAscList
 fromList :: (Ord a) => [a] -> PairingHeap a
 fromList = fromAscList
 
+mergeList :: forall a. (Ord a) => [PairingHeap a] -> PairingHeap a
 mergeList [a] = a
 mergeList x = mergeList (mergePairs x)
+
+mergePairs :: forall a. (Ord a) => [PairingHeap a] -> [PairingHeap a]
 mergePairs (a:b:c) = merge a b : mergePairs c
 mergePairs x = x

@@ -8,7 +8,6 @@ module Data.Heap.Skew
 where
 
 import Prelude hiding (head, tail, null)
-import qualified Data.List as L
 
 data (Ord a) => SkewHeap a =
     SkewLeaf

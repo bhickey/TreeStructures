@@ -8,12 +8,16 @@ module Data.Tree.AVL
 where
 
 import Prelude hiding (head, tail, (!!), lookup, null)
-import Data.Maybe
-
 
 data AVLTree k v =
     Leaf
   | AVLTree !k !v !Int !Int !(AVLTree k v) !(AVLTree k v) deriving (Ord, Eq, Show)
+
+
+instance Functor (AVLTree k) where
+  fmap _ Leaf = Leaf
+  fmap f (AVLTree k v lh rh l r) = AVLTree k (f v) lh rh (fmap f l) (fmap f r)
+
 
 -- | /O(1)/. 'singleton' constructs a singleton AVL tree
 singleton :: (Ord k) => k -> v -> AVLTree k v

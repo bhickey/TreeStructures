@@ -13,6 +13,12 @@ data (Ord k) => SplayTree k v =
     Leaf
   | SplayTree k v Int (SplayTree k v) (SplayTree k v) deriving (Ord, Eq)
 
+
+instance (Ord k) => Functor (SplayTree k) where
+    fmap _ Leaf = Leaf
+    fmap f (SplayTree k v h l r) = SplayTree k (f v) h (fmap f l) (fmap f r)
+
+
 -- | /O(1)/. 'singleton' constructs a splay tree containing one element.
 singleton :: (Ord k) => (k,v) -> SplayTree k v
 singleton (k,v) = SplayTree k v 0 Leaf Leaf
@@ -83,7 +89,7 @@ zig _ Leaf = error "tree corruption"
 zig (SplayTree k1 v1 _ l1 r1) (SplayTree k v d _ r) =
   SplayTree k1 v1 d l1 (SplayTree k v (d - size l1 - 1) r1 r)
 
--- | /O(1)/. zig rotates its second argument up
+-- | /O(1)/. zag rotates its second argument up
 zag :: (Ord k) => SplayTree k v -> SplayTree k v -> SplayTree k v
 zag Leaf _ = error "tree corruption"
 zag _ Leaf = error "tree corruption"
